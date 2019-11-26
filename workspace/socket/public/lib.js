@@ -223,28 +223,15 @@ class DB {
 
 class Auth {
     signIn(id, pass) {
-        // ToDo ログイン
-        return axios.post('http://localhost/login',
-            {
-                user_id: id,
-                password: pass
-            })
-            .then(res => {
-                console.log(res);
+        socket.emit('signIn', id, pass);
+        return socket.emitAsync('signIn')
+            .then(result => {
+                console.log('result', result);
+                return result;
             })
             .catch(error => {
                 console.log(error);
             });
-
-        // socket.emit('signIn', id, pass);
-        // return socket.emitAsync('signIn')
-        //     .then(result => {
-        //         console.log('result', result);
-        //         return result;
-        //     })
-        //     .catch(error => {
-        //         console.log(error);
-        //     });
     };
 
     createUser(id, pass) {
