@@ -3,9 +3,6 @@ const app = express();
 const server = require('http').createServer(app);
 const cookieParser = require('cookie-parser');
 const passport = require('passport');
-const connectFlash = require("connect-flash");
-const routes = require('./lib/routes');
-const Authenticator = require("./lib/Authenticator");
 
 // socket.ioモジュールを読み込み
 const io = require('socket.io')(server);
@@ -18,7 +15,6 @@ const port = process.env.PORT || 80;
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
-app.use(connectFlash());
 app.use(express.static('public'));
 
 // session
@@ -34,21 +30,14 @@ const session = require('express-session')({
 });
 
 app.use(session);
-// passportの初期化
-Authenticator.initialize(app);
-// 認証情報を持たせる
-Authenticator.setStrategy();
 
 // CORS対策
 app.use(function (req, res, next) {
     res.set('Access-Control-Allow-Origin', '*');
     res.set('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
-    console.log("セッション\n" + JSON.stringify(req.session));
+    console.log(req);
     next();
 });
-
-// ルーティング設定
-app.use(routes);
 
 // socketにsessionを渡す
 const socket_io_session = function (session, passport) {

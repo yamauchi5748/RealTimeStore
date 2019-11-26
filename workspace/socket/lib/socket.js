@@ -1,16 +1,20 @@
-const authSetting = require("../config/auth.json");
+const config = require("../config/config.json");
 const user = require("./user");
 // mogodbを管理するdboを生成
 const dbo = require('./mongo');
 const Mongo = require('mongodb');
 const ObjectID = Mongo.ObjectID;
 const DB_name = "database";
-const auth_DB_name = authSetting.DBName;
+const auth_DB_name = config.DBName;
 const auth_collection = "users";
 
 // socketでの処理を記述
 exports.onConnection = function (io) {
     return function (socket) {
+
+
+        // console.log(socket.request)
+
         // documentGet
         socket.on('doc/get', async (collection_name, _id) => {
 
@@ -99,6 +103,7 @@ exports.onConnection = function (io) {
 
         // collectionGet
         socket.on('get', async (collection_name, query) => {
+            console.log(socket.request.session)
 
             const result = await dbo.aggregate(DB_name, collection_name, query);
 
@@ -120,6 +125,9 @@ exports.onConnection = function (io) {
                 socket.emit('connect_error', 'No id or pass!');
                 return;
             }
+            socket.request.session.user = {
+                user_id: id
+            };
 
             const pipline = []
             pipline.push({

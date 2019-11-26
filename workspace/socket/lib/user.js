@@ -1,9 +1,9 @@
-const authSetting = require("../config/auth.json");
+const config = require("../config/config.json");
 // mogodbを管理するdboを生成
 const dbo = require('./mongo');
 const Mongo = require('mongodb');
 const ObjectID = Mongo.ObjectID;
-const DB_name = authSetting.DBName;
+const DB_name = config.DBName;
 const collection_name = 'users';
 
 class User {

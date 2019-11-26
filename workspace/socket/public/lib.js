@@ -1,10 +1,5 @@
 var socket = io('http://localhost');
 
-axios.get('http://localhost/')
-    .then(res => {
-        console.log(res);
-    })
-
 socket.emitAsync = event => {
     return new Promise((resolve, reject) => {
         socket.once(event, (result) => {
