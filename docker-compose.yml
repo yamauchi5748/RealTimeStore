@@ -1,0 +1,42 @@
+version: "3.7"
+
+services:
+  mongodb:
+    image: mongo:latest
+    container_name: mongodb
+    environment:
+      - "MONGODB_USER=user"
+      - "MONGODB_PASS=password!"
+    volumes:
+      - ${DB_PATH_HOST}:${DB_PATH_CONTAINER}
+    ports:
+      - ${DB_HOST_PORT}:${DB_CONTAINER_PORT}
+
+  socket:
+    build:
+      context: ./docker/socket # Dockerfile保存場所
+    container_name: socket # コンテナ名
+    tty: true
+    depends_on:
+      - "mongodb"
+    ports: # ポート接続
+      - ${HOST_SOCKET_PORT}:${CONTAINER_SOCKET_PORT}
+    volumes: # mount workdir
+      - ${APP_CODE_PATH_SOCKET_HOST}:${APP_CODE_PATH_SOCKET_CONTAINER}
+
+  nginx:
+    build:
+      context: ./docker/nginx # Dockerfile保存場所
+    container_name: nginx # コンテナ名
+    tty: true
+    ports: # ポート接続
+      - ${HOST_NGINX_PORT}:${CONTAINER_NGINX_PORT}
+    volumes: # mount workdir
+      - ${APP_CODE_PATH_NGINX_HOST}:${APP_CODE_PATH_NGINX_CONTAINER}
+    environment:
+      - "ME_CONFIG_OPTIONS_EDITORTHEME=ambiance"
+      - "ME_CONFIG_BASICAUTH_USERNAME=user"
+      - "ME_CONFIG_BASICAUTH_PASSWORD=password!"
+
+volumes:
+  mongodb-data: {}

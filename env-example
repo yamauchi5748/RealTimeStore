@@ -1,0 +1,23 @@
+###########################################################
+###################### General Setup ######################
+###########################################################
+
+### Paths #################################################
+
+### ホストとコンテナ内ディレクトリをマウント ###
+APP_CODE_PATH_SOCKET_HOST=./workspace/socket
+APP_CODE_PATH_SOCKET_CONTAINER=/src
+APP_CODE_PATH_NGINX_HOST=./workspace/nginx
+APP_CODE_PATH_NGINX_CONTAINER=/usr/share/nginx/html
+DB_PATH_HOST=./mongodb-data
+DB_PATH_CONTAINER=/data
+
+### ポート開放 ###
+HOST_SOCKET_PORT=80
+CONTAINER_SOCKET_PORT=80
+HOST_NGINX_PORT=3000
+CONTAINER_NGINX_PORT=80
+
+### データベース情報 ###
+DB_HOST_PORT=27017
+DB_CONTAINER_PORT=27017
