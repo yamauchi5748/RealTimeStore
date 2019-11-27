@@ -1,19 +1,16 @@
 const config = require("../config/config.json");
-const user = require("./user");
-// mogodbを管理するdboを生成
+const user = require("../models/user");
 const dbo = require('./mongo');
 const Mongo = require('mongodb');
+
 const ObjectID = Mongo.ObjectID;
-const DB_name = "database";
-const auth_DB_name = config.DBName;
+const DB_name = config.data.DB_name;
+const auth_DB_name = config.auth.DBName;
 const auth_collection = "users";
 
 // socketでの処理を記述
 exports.onConnection = function (io) {
     return function (socket) {
-
-
-        // console.log(socket.request)
 
         // documentGet
         socket.on('doc/get', async (collection_name, _id) => {
@@ -88,14 +85,14 @@ exports.onConnection = function (io) {
         });
 
         // collectionAdd
-        socket.on('add', async (collection_name, doc) => {
+        socket.on('add', async (collection_name, doc, query) => {
             if (!doc) {
                 socket.emit('connect_error', 'No doc!');
                 return;
             }
 
             await dbo.insert(DB_name, collection_name, doc);
-            const result = await dbo.aggregate(DB_name, collection_name, []);
+            const result = await dbo.aggregate(DB_name, collection_name, query);
 
             io.sockets.emit(`snapshot/${collection_name}`, result);
             socket.emit('add', result);
@@ -125,6 +122,7 @@ exports.onConnection = function (io) {
                 socket.emit('connect_error', 'No id or pass!');
                 return;
             }
+            console.log(socket.request.session.user)
             socket.request.session.user = {
                 user_id: id
             };
@@ -139,7 +137,7 @@ exports.onConnection = function (io) {
 
             const result = await dbo.aggregate(auth_DB_name, auth_collection, pipline);
 
-            socket.emit('signIn', !!result[0]);
+            socket.emit('signIn', result[0]);
         });
 
         // createUser
@@ -151,7 +149,7 @@ exports.onConnection = function (io) {
 
             const result = await user.create(id, pass);
 
-            socket.emit('create/user', result.ops[0]);
+            socket.emit('create/user', result);
         });
     }
 }

@@ -8,7 +8,6 @@ exports.aggregate = function (DB_name, collection, key) {
         MongoClient.connect(url, { useUnifiedTopology: true, useNewUrlParser: true }, function (error, database) {
             if (error) reject(error);
             const dbo = database.db(DB_name);
-            console.log(key)
             dbo.collection(collection).aggregate(key).toArray(function (err, result) {
                 if (err) reject(err);
                 database.close();

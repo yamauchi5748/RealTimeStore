@@ -1,6 +1,11 @@
 {
-    "DBName": "auth",
-    "usernameField": "user_id",
-    "passwordField": "password",
-    "strategyName": "local"
+    "auth": {
+        "DBName": "auth",
+        "AuthField": [ "user_id" ],
+        "passwordField": true
+    },
+
+    "data": {
+        "DBName": "database"
+    }
 }
