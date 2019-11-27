@@ -1,8 +1,7 @@
 {
     "auth": {
         "DBName": "auth",
-        "AuthField": [ "user_id" ],
-        "passwordField": true
+        "AuthField": "unti"
     },
 
     "data": {

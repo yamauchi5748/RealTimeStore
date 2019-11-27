@@ -1,12 +1,10 @@
 const config = require("../config/config.json");
-const user = require("../models/user");
+const User = require("../models/user");
 const dbo = require('./mongo');
 const Mongo = require('mongodb');
 
 const ObjectID = Mongo.ObjectID;
 const DB_name = config.data.DB_name;
-const auth_DB_name = config.auth.DBName;
-const auth_collection = "users";
 
 // socketでの処理を記述
 exports.onConnection = function (io) {
@@ -116,38 +114,39 @@ exports.onConnection = function (io) {
             socket.emit('drop', result);
         });
 
-        // sighin
-        socket.on('signIn', async (id, pass) => {
-            if (!id || !pass) {
-                socket.emit('connect_error', 'No id or pass!');
+        // signin
+        socket.on('signIn', async (auth_field, password) => {
+
+            console.log(socket.request.session.user);
+
+            // Auth_fields check
+            if (!auth_field) {
+                socket.emit('connect_error', 'No auth_field. auth_filed must exist!');
+                return;
+
+            } else if (!password) {
+                socket.emit('connect_error', 'password does not exist. password must exist!');
                 return;
             }
-            console.log(socket.request.session.user)
-            socket.request.session.user = {
-                user_id: id
-            };
 
-            const pipline = []
-            pipline.push({
-                $match: {
-                    _id: id,
-                    password: pass
-                }
-            });
+            const result = await User.authorize(auth_field, password);
 
-            const result = await dbo.aggregate(auth_DB_name, auth_collection, pipline);
+            /** register userInfo to session **/
+            if (result.length === 1) socket.request.session.user = result[0];
 
             socket.emit('signIn', result[0]);
         });
 
         // createUser
-        socket.on('create/user', async (id, pass) => {
-            if (!id || !pass) {
-                socket.emit('connect_error', 'No id or pass!');
+        socket.on('create/user', async (user) => {
+
+            /* request user and password must be matched config.auth */
+            if (!user[config.auth.AuthField] || !user['password']) {
+                socket.emit('connect_error', 'User must have AuthField and password. please reference config!');
                 return;
             }
 
-            const result = await user.create(id, pass);
+            const result = await User.create(user);
 
             socket.emit('create/user', result);
         });

@@ -1,1 +1,2 @@
 .env
+./socket/node_modules/*

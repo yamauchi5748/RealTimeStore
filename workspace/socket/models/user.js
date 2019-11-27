@@ -1,6 +1,7 @@
 const config = require("../config/config.json");
 const dbo = require('../lib/mongo');
 const Mongo = require('mongodb');
+const bcrypt = require('bcrypt');
 
 const ObjectID = Mongo.ObjectID;
 const DB_name = config.auth.DBName;
@@ -16,26 +17,13 @@ class User {
             }
         });
 
-        const result = await dbo.aggregate(DB_name, collection_name, pipline);
-
-        return result[0];
+        return await dbo.aggregate(DB_name, collection_name, pipline);
     };
 
-    async create(user_id, password) {
-        if (!user_id || !password) {
-            return 'error';
-        }
+    async create(user) {
+        user.password = bcrypt.hashSync(user.password, 10);
 
-        const user = {
-            _id: user_id,
-            password: password
-        }
-
-        console.log(user);
-
-        const result = await dbo.insert(DB_name, collection_name, user);
-
-        return result;
+        return await dbo.insert(DB_name, collection_name, user);
     };
 
     update(user_id, user) {
@@ -46,18 +34,18 @@ class User {
 
     };
 
-    async authorize(user_id, password) {
-        const pipline = []
+    async authorize(auth_field, password) {
+        const pipline = [];
+
         pipline.push({
             $match: {
-                _id: user_id,
-                password: password
+                [config.auth.AuthField]: auth_field
             }
         });
 
         const result = await dbo.aggregate(DB_name, collection_name, pipline);
 
-        return result[0];
+        return (result.length === 1 && bcrypt.compareSync(password, result[0].password)) ? result : Array()
     }
 }
 
