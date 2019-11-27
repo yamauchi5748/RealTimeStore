@@ -1,2 +1,2 @@
 .env
-./socket/node_modules/*
+/workspace/socket/node_modules
