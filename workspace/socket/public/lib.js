@@ -132,6 +132,7 @@ class Collection {
 
     onSnapshot(collback) {
         console.log(`snapshot/${this.collection_name}`);
+        socket.emit('snapshot/collection', this.collection_name, this._query);
         socket.on(`snapshot/${this.collection_name}`, collback || console.log);
     };
 
@@ -234,9 +235,9 @@ class Auth {
             });
     };
 
-    createUser(id, pass) {
+    createUser(user) {
         // ToDo ユーザー作成
-        socket.emit('create/user', id, pass);
+        socket.emit('create/user', user);
         return socket.emitAsync('create/user')
             .then(result => {
                 console.log('result', result);

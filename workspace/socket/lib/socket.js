@@ -114,6 +114,16 @@ exports.onConnection = function (io) {
             socket.emit('drop', result);
         });
 
+        // collectionSnapshot
+        socket.on('snapshot/collection', async (collection_name, query) => {
+
+            console.log(query);
+            // const result = await dbo.drop(DB_name, collection_name);
+
+            // io.sockets.emit(`snapshot/${collection_name}`, result);
+            // socket.emit('drop', result);
+        });
+
         // signin
         socket.on('signIn', async (auth_field, password) => {
 
