@@ -1,8 +1,13 @@
+// サーバーに必要なモジュールを読み込み
 const express = require('express');
 const app = express();
 const server = require('http').createServer(app);
 const cookieParser = require('cookie-parser');
 const passport = require('passport');
+
+//mongodbモジュール読み込み,初期化
+const mongo = require('./lib/mongo');
+//mongo.init();
 
 // socket.ioモジュールを読み込み
 const io = require('socket.io')(server);
@@ -12,8 +17,6 @@ const socket = require('./lib/socket');
 const port = process.env.PORT || 80;
 
 // appの初期設定
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static('public'));
 

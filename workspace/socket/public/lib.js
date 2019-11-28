@@ -24,30 +24,23 @@ class Collection {
     collection_name;
 
     /** 
-     * this is the subcollection or specality collection name  
-     **/
-    channel_name;
-
-    /** 
      * this is the hidden propaty
      * _query is mongoDB's pipline that before you need gotten  
      **/
     _query;
 
     /**
-     * this constructor is collection_name and channel_name and query recieved
+     * this constructor is collection_name and query recieved
      * @param collection_name   expected String
-     * @param channel_name      expected String
      * @param query             expected Array
     **/
-    constructor(collection_name, channel_name, query) {
+    constructor(collection_name, query) {
         this.collection_name = collection_name;
-        this.channel_name = channel_name || collection_name;
         this._query = query || [];
     };
 
     add(doc) {
-        socket.emit('add', this.channel_name, doc, this._query);
+        socket.emit('add', this.collection_name, doc, this._query);
         return socket.emitAsync('add')
             .then(result => {
                 console.log('result', result);
@@ -85,9 +78,7 @@ class Collection {
     };
 
     where(literal1, operator, literal2) {
-        const collection = new Collection(this.collection_name, this.channel_name, this._query);
-
-        collection.channel_name += `/where:${literal1}-${operator}-${literal2}`;
+        const collection = new Collection(this.collection_name, this._query);
 
         /* operator separate */
         let query =
@@ -97,8 +88,9 @@ class Collection {
                         operator === ">=" ? { $gte: literal2 } :
                             operator === "<" ? { $lt: literal2 } :
                                 operator === "<=" ? { $lte: literal2 } :
-                                    'error';
-        if (!literal1 || !order || !literal2) console.log('it is too few argumrnts. reference error!');
+                                    operator === "in" ? { $in: literal2 } :
+                                        'error';
+        if (!literal1 || !operator || !literal2) console.log('it is too few argumrnts. reference error!');
         if (query === 'error') console.log('operator does not exist. reference error!');
 
         collection._query.push({
@@ -111,9 +103,7 @@ class Collection {
     };
 
     order(literal, order) {
-        const collection = new Collection(this.collection_name, this.channel_name, this._query);
-
-        collection.channel_name += `/order:${literal}-${order}`;
+        const collection = new Collection(this.collection_name, this._query);
 
         let query = order >= 0 ? 1 : -1;
 
@@ -129,11 +119,9 @@ class Collection {
     };
 
     limit(limit) {
-        const collection = new Collection(this.collection_name, this.channel_name, this._query);
+        const collection = new Collection(this.collection_name, this._query);
 
-        collection.channel_name += `/limit:${limit}`;
-
-        if(!limit) console.log('it is too few argumrnts. reference error!');
+        if (!limit) console.log('it is too few argumrnts. reference error!');
 
         collection._query.push({
             $limit: limit
@@ -143,32 +131,32 @@ class Collection {
     };
 
     onSnapshot(collback) {
-        console.log(`snapshot/${this.channel_name}`);
-        socket.on(`snapshot/${this.channel_name}`, collback || console.log);
+        console.log(`snapshot/${this.collection_name}`);
+        socket.on(`snapshot/${this.collection_name}`, collback || console.log);
     };
 
     doc(doc_id) {
-        return new Doc(this.channel_name, doc_id);
+        return new Doc(this.collection_name, doc_id);
     };
 
 }
 
 class Doc {
-    channel_name
+    collection_name
     doc_id
 
     /**
-     * this constructor is channel_name and document_id recieved
-     * @param channel_name      expected string
+     * this constructor is collection_name and document_id recieved
+     * @param collection_name      expected string
      * @param doc_id            expected string
     **/
-    constructor(channel_name, doc_id) {
-        this.channel_name = channel_name;
+    constructor(collection_name, doc_id) {
+        this.collection_name = collection_name;
         this.doc_id = doc_id
     };
 
     get() {
-        socket.emit('doc/get', this.channel_name, this.doc_id);
+        socket.emit('doc/get', this.collection_name, this.doc_id);
         return socket.emitAsync('doc/get')
             .then(result => {
                 console.log('result', result);
@@ -182,7 +170,7 @@ class Doc {
     set(doc) {
         // ToDo MongoDBでのsetを実装する
 
-        socket.emit('doc/set', this.channel_name, this.doc_id, doc);
+        socket.emit('doc/set', this.collection_name, this.doc_id, doc);
         return socket.emitAsync('doc/set')
             .then(result => {
                 console.log('result', result);
@@ -194,7 +182,7 @@ class Doc {
     };
 
     update(doc) {
-        socket.emit('doc/update', this.channel_name, this.doc_id, doc);
+        socket.emit('doc/update', this.collection_name, this.doc_id, doc);
         return socket.emitAsync('doc/update')
             .then(result => {
                 console.log('result', result);
@@ -206,7 +194,7 @@ class Doc {
     };
 
     delete() {
-        socket.emit('doc/delete', this.channel_name, this.doc_id);
+        socket.emit('doc/delete', this.collection_name, this.doc_id);
         return socket.emitAsync('doc/delete')
             .then(result => {
                 console.log('result', result);
@@ -222,14 +210,14 @@ class Doc {
     };
 
     collection(collection_name) {
-        return new Collection(`${this.doc_id || ''}/${collection_name}`, null, []);
+        return new Collection(`${this.doc_id || ''}/${collection_name}`, []);
     };
 
 }
 
 class DB {
     collection(collection_name) {
-        return new Collection(`/${collection_name}`, null, []);
+        return new Collection(`/${collection_name}`, []);
     };
 }
 

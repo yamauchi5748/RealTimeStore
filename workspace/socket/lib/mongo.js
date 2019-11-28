@@ -1,6 +1,24 @@
 const Mongo = require('mongodb')
 const MongoClient = Mongo.MongoClient;
 const url = 'mongodb://mongodb:27017';
+const config = require('../config/config');
+
+//DBの初期化
+exports.init = function () {
+    return new Promise(function (resolve, reject) {
+        MongoClient.connect(url, { useUnifiedTopology: true, useNewUrlParser: true }, function (error, database) {
+            if (error) reject(error);
+            const dbo = database.db(config.auth.DB_name);
+            dbo.collection('users').createIndex({ [config.auth.AuthField]: 1 })
+            .then(res => {
+                console.log(res)
+            })
+        });
+    })
+        .catch(function (err) {
+            console.log(err);
+        })
+};
 
 //DBからObjectを取得
 exports.aggregate = function (DB_name, collection, key) {
